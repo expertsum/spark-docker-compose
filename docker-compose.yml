@@ -1,0 +1,81 @@
+version: "3.5"
+services:
+
+  spark-master:
+    container_name: spark-master
+    image: miniconda3-spark:latest
+    ports:
+      - "4040:4040"
+      - "8080:8080"
+    command:
+      - start-master.sh
+    environment:
+      - SPARK_NO_DAEMONIZE=1
+      - SPARK_PUBLIC_DNS=localhost
+    networks:
+      - spark-cluster 
+    volumes:
+      - ./events:/tmp/spark-events
+
+  spark-worker:
+    depends_on:
+      - spark-master
+    image: miniconda3-spark:latest
+    expose:
+      - "8081"
+    ports: 
+      - "0:8081"
+    command:
+      - start-slave.sh
+      - spark://spark-master:7077
+    environment:
+      - SPARK_NO_DAEMONIZE=1
+      - SPARK_PUBLIC_DNS=localhost
+    networks:
+      - spark-cluster
+    volumes:
+      - ./events:/tmp/spark-events
+
+  spark-history:
+    depends_on:
+      - spark-master
+    container_name: spark-history
+    image: miniconda3-spark:latest
+    ports:
+      - "18080:18080"
+    command:
+      - start-history-server.sh
+    environment:
+      - SPARK_NO_DAEMONIZE=1
+      - SPARK_PUBLIC_DNS=localhost
+    networks:
+      - spark-cluster
+    volumes:
+      - ./events:/tmp/spark-events
+
+  jupyter-notebook:
+    depends_on:
+      - spark-master
+    container_name: jupyter-notebook
+    image: miniconda3-spark:latest
+    ports:
+      - "5050:4040"
+      - "8888:8888"
+    networks:
+      - spark-cluster
+    volumes:
+      - ./notebooks:/opt/notebooks
+      - ./events:/tmp/spark-events
+    command:
+      - jupyter
+      - notebook
+      - --ip='*'
+      - --port=8888
+      - --no-browser
+      - --notebook-dir=/opt/notebooks
+      - --allow-root
+      - --NotebookApp.password='sha1:9fd15fe4a4ce:0b0a713b2cc29caabb2228971971bae993cb86d2'
+
+networks:
+  spark-cluster:
+    name: spark-cluster

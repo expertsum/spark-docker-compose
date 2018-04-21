@@ -3,7 +3,7 @@ services:
 
   spark-master:
     container_name: spark-master
-    image: miniconda3-spark:latest
+    image: elopezdelara/miniconda3-spark:latest
     ports:
       - "4040:4040"
       - "8080:8080"
@@ -20,7 +20,7 @@ services:
   spark-worker:
     depends_on:
       - spark-master
-    image: miniconda3-spark:latest
+    image: elopezdelara/miniconda3-spark:latest
     expose:
       - "8081"
     ports: 
@@ -40,7 +40,7 @@ services:
     depends_on:
       - spark-master
     container_name: spark-history
-    image: miniconda3-spark:latest
+    image: elopezdelara/miniconda3-spark:latest
     ports:
       - "18080:18080"
     command:
@@ -57,7 +57,7 @@ services:
     depends_on:
       - spark-master
     container_name: jupyter-notebook
-    image: miniconda3-spark:latest
+    image: elopezdelara/miniconda3-spark:latest
     ports:
       - "5050:4040"
       - "8888:8888"
